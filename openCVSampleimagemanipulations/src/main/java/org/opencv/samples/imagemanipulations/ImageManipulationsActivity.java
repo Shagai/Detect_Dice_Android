@@ -76,7 +76,7 @@ public class ImageManipulationsActivity extends Activity implements CvCameraView
     private int                 index = 0;
     private DetectDices         det = new DetectDices();
     private boolean task = false;
-    private Mat frame = null;
+    private List<MatOfPoint> squares = null;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -226,20 +226,27 @@ public class ImageManipulationsActivity extends Activity implements CvCameraView
             this.task = true;
         }
 
-        Mat frame = det.GetFrame();
-        if (frame != null && this.task == true) {
+        List<MatOfPoint> squares = det.GetSquares();
+        if (squares != null && this.task == true) {
             //rgba = frame.clone(); // Desremove //  when you want fluid video
             det = new DetectDices();
             this.task = false;
-            this.frame = frame;     // Remove when you want fluid video
+            this.squares = squares;     // Remove when you want fluid video
         }
 
         // Remove when you want fluid video
-        if (this.frame != null){
-            rgba = this.frame;
-        }
 
-        return rgba;
+        //Imgproc.drawContours(rgba, this.squares, -1, new Scalar(0, 255, 0), 3);
+
+        Imgproc.drawContours(gray, this.squares, -1, new Scalar(0, 0, 0), -1);
+        Mat mask = new Mat().zeros(new  Size(rgba.cols(), rgba.rows()), CvType.CV_8UC1);
+        Mat ne = rgba.clone();
+        Imgproc.cvtColor(rgba,ne,CvType.CV_8UC1);
+        Size sizergba = rgba.size();
+        Size sizermask = mask.size();
+        Core.bitwise_and(mask, gray, gray);
+
+        return gray;
     }
 }
 
